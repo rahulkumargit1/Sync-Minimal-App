@@ -1,0 +1,7 @@
+api/venv/
+api/__pycache__/
+mobile/build/
+mobile/.dart_tool/
+.env
+.idea/
+.vscode/
