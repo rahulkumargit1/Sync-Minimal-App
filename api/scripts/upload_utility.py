@@ -60,10 +60,13 @@ async def process_folder(folder_path, upload_to_s3=False):
             audio_url = file_path # Default to local path
             if upload_to_s3:
                 s3_key = f"tracks/{track_id}.mp3"
+                print(f"Uploading {filename} to S3 bucket {S3_BUCKET}...")
                 uploaded_url = await upload_file_to_s3(file_path, S3_BUCKET, s3_key)
                 if uploaded_url:
                     audio_url = uploaded_url
-            
+                    print(f"Successfully uploaded: {audio_url}")
+                else:
+                    print(f"Failed to upload {filename}, keeping local path.")
             # Insert into database
             await conn.execute(
                 """

@@ -22,11 +22,14 @@ app.add_middleware(
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:sync_pass@127.0.0.1:5444/sync_db")
 
 # --- Static File Serving ---
-# Mounting local music folders so the mobile app can stream directly from the PC.
-if os.path.exists(r"E:\smallmp3"):
-    app.mount("/music/small", StaticFiles(directory=r"E:\smallmp3"), name="small_music")
-if os.path.exists(r"E:\mp3"):
-    app.mount("/music/large", StaticFiles(directory=r"E:\mp3"), name="large_music")
+# Mounting local music folders (only if they exist, for local dev/testing)
+small_mp3_path = r"E:\smallmp3"
+large_mp3_path = r"E:\mp3"
+
+if os.path.exists(small_mp3_path):
+    app.mount("/music/small", StaticFiles(directory=small_mp3_path), name="small_music")
+if os.path.exists(large_mp3_path):
+    app.mount("/music/large", StaticFiles(directory=large_mp3_path), name="large_music")
 
 # --- Database Connection Pool ---
 async def get_db_pool():

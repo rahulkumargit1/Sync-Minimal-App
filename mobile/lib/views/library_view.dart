@@ -26,8 +26,9 @@ class _LibraryViewState extends State<LibraryView> {
 
   Future<void> _fetchTracks() async {
     try {
-      // Use the PC's local IP address so physical devices on the same Wi-Fi can connect
-      const String baseUrl = 'http://10.37.141.95:8000';
+      // Use your Render cloud URL for permanent access
+      // Replace with your actual Render URL after deployment (e.g. https://sync-music-xyz.onrender.com)
+      const String baseUrl = 'https://sync-music-api.onrender.com';
       final response = await http.get(Uri.parse('$baseUrl/tracks?limit=50&offset=0'));
       
       if (response.statusCode == 200) {
