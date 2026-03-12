@@ -14,6 +14,7 @@ class SyncTheme {
 
   static ThemeData get minimalistTheme {
     return ThemeData(
+      useMaterial3: false,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: oledBlack,
       primaryColor: starkWhite,
@@ -71,7 +72,7 @@ class SyncTheme {
       ),
 
       // Strip cards of elevation and outlines
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         color: oledBlack,
         elevation: 0,
         margin: EdgeInsets.zero,
