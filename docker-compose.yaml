@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: sync_pass
+      POSTGRES_DB: sync_db
+    ports:
+      - "5444:5432"
+    volumes:
+      - ./api/init.sql:/docker-entrypoint-initdb.d/init.sql

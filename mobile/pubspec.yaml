@@ -1,4 +1,4 @@
-name: sync
+name: sync_app
 description: A high-performance, minimalist music streaming mobile application.
 publish_to: 'none'
 version: 1.0.0+1
