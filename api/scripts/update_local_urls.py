@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-BASE_URL = "http://127.0.0.1:8000" # Change to your PC's IP for mobile testing
+BASE_URL = "http://10.37.141.95:8000" # Updated for physical mobile device testing
 
 async def update_urls():
     conn = await asyncpg.connect(DATABASE_URL)

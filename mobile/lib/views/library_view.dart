@@ -26,8 +26,8 @@ class _LibraryViewState extends State<LibraryView> {
 
   Future<void> _fetchTracks() async {
     try {
-      // Use 10.0.2.2 for Android emulator to access localhost
-      final String baseUrl = Platform.isAndroid ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
+      // Use the PC's local IP address so physical devices on the same Wi-Fi can connect
+      const String baseUrl = 'http://10.37.141.95:8000';
       final response = await http.get(Uri.parse('$baseUrl/tracks?limit=50&offset=0'));
       
       if (response.statusCode == 200) {
