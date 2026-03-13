@@ -1,4 +1,5 @@
-FROM python:3.11-slim
+# Create user with UID 1000
+RUN useradd -m -u 1000 user
 
 WORKDIR /app
 
@@ -8,13 +9,16 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY --chown=user:user requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
 
-COPY . .
+COPY --chown=user:user . .
 
-# App Runner typically defaults to 8080 or 8000
-EXPOSE 8000
+# Set environment path for the non-root user
+ENV PATH="/home/user/.local/bin:${PATH}"
 
-# Start uvicorn on port 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Hugging Face Spaces expects port 7860
+EXPOSE 7860
+
+# Start uvicorn on port 7860
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
