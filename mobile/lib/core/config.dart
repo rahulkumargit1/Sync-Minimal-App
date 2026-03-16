@@ -1,3 +1,3 @@
 class AppConfig {
-  static const String baseUrl = 'https://public-seas-ring.loca.lt'; // Update this to your Ngrok URL if using Ngrok
+  static const String baseUrl = 'http://10.190.72.95:8000'; // Direct Local IP for stable connection
 }
