@@ -5,3 +5,9 @@ mobile/.dart_tool/
 .env
 .idea/
 .vscode/
+android-sdk/
+flutter/
+jdk/
+cmdline-tools.zip
+*.zip
+*.apk

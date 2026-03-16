@@ -6,6 +6,8 @@ import '../core/theme.dart';
 import 'settings_view.dart';
 import 'player_view.dart';
 
+import '../core/config.dart';
+
 class LibraryView extends StatefulWidget {
   const LibraryView({super.key});
 
@@ -26,10 +28,7 @@ class _LibraryViewState extends State<LibraryView> {
 
   Future<void> _fetchTracks() async {
     try {
-      // Use your Render cloud URL for permanent access
-      // Replace with your actual Render URL after deployment (e.g. https://sync-music-xyz.onrender.com)
-      const String baseUrl = 'https://sync-music-api.onrender.com';
-      final response = await http.get(Uri.parse('$baseUrl/tracks?limit=50&offset=0'));
+      final response = await http.get(Uri.parse('${AppConfig.baseUrl}/tracks?limit=50&offset=0'));
       
       if (response.statusCode == 200) {
         setState(() {
