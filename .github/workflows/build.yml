@@ -34,9 +34,9 @@ jobs:
         working-directory: ./mobile
         run: flutter pub get
 
-      - name: Make gradlew executable
-        working-directory: ./mobile/android
-        run: chmod +x gradlew
+      - name: Fix Android Permissions
+        working-directory: ./mobile
+        run: chmod -R +x android/
 
       - name: Build APK
         working-directory: ./mobile
