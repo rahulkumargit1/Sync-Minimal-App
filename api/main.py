@@ -79,7 +79,18 @@ async def get_tracks(limit: int = 50, offset: int = 0, genre: Optional[str] = No
                     "FROM tracks LIMIT $1 OFFSET $2"
                 )
                 rows = await connection.fetch(query, limit, offset)
-            return [Track(**dict(row)) for row in rows]
+            
+            processed_tracks = []
+            for row in rows:
+                track_dict = dict(row)
+                url = track_dict.get('audio_url', '')
+                # If URL is a local Windows path (like E:\mp3...), convert to local HTTP
+                if url.startswith('E:\\') or url.startswith('e:\\'):
+                    basename = os.path.basename(url)
+                    # We assume these are served by the large or small mounts. For safety, map to /music/large
+                    track_dict['audio_url'] = f"http://172.27.252.95:8000/music/large/{basename}"
+                processed_tracks.append(Track(**track_dict))
+            return processed_tracks
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
