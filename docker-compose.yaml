@@ -9,3 +9,27 @@ services:
       - "5444:5432"
     volumes:
       - ./api/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sync_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    environment:
+      DATABASE_URL: postgresql://postgres:sync_pass@db:5432/sync_db
+      SMALL_MP3_PATH: ""
+      LARGE_MP3_PATH: ""
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

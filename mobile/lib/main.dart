@@ -1,25 +1,75 @@
-// Triggering build...
 import 'package:flutter/material.dart';
-import 'core/theme.dart';
-import 'views/library_view.dart';
+import 'package:flutter/services.dart';
+import 'services/settings_service.dart';
+import 'services/api_service.dart';
+import 'services/player_service.dart';
+import 'screens/shell_screen.dart';
+import 'theme/app_theme.dart';
 
-void main() {
-  // Ensure eager initialization for the core UI.
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  runApp(const SyncApp());
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      navigationBarColor: Colors.transparent,
+    ),
+  );
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  final settings = await SettingsService.create();
+  final api = ApiService(settings);
+  final player = PlayerService();
+
+  runApp(SyncApp(settings: settings, api: api, player: player));
 }
 
-class SyncApp extends StatelessWidget {
-  const SyncApp({super.key});
+class SyncApp extends StatefulWidget {
+  final SettingsService settings;
+  final ApiService api;
+  final PlayerService player;
+
+  const SyncApp({
+    super.key,
+    required this.settings,
+    required this.api,
+    required this.player,
+  });
+
+  @override
+  State<SyncApp> createState() => _SyncAppState();
+}
+
+class _SyncAppState extends State<SyncApp> {
+  @override
+  void dispose() {
+    widget.player.dispose();
+    super.dispose();
+  }
+
+  ThemeMode _resolveTheme(String mode) => switch (mode) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      };
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sync',
       debugShowCheckedModeBanner: false,
-      theme: SyncTheme.minimalistTheme,
-      home: const LibraryView(),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: _resolveTheme(widget.settings.themeMode),
+      home: ShellScreen(
+        api: widget.api,
+        player: widget.player,
+        settings: widget.settings,
+      ),
     );
   }
 }
