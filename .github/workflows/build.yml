@@ -38,6 +38,13 @@ jobs:
         working-directory: ./mobile
         run: chmod -R +x android/
 
+      - name: Debug Gradle Wrapper
+        working-directory: ./mobile/android
+        run: |
+          ls -la
+          file gradlew || true
+          ./gradlew --version || echo "Direct gradlew execution failed"
+
       - name: Build APK
         working-directory: ./mobile
         run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
