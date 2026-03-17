@@ -72,7 +72,7 @@ class SyncTheme {
       ),
 
       // Strip cards of elevation and outlines
-      cardTheme: const CardThemeData(
+      cardTheme: const CardTheme(
         color: oledBlack,
         elevation: 0,
         margin: EdgeInsets.zero,

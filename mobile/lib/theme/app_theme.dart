@@ -37,7 +37,7 @@ class AppTheme {
         ),
         iconTheme: IconThemeData(color: onSurface),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: surfaceVariant,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
