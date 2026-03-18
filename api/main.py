@@ -1,4 +1,7 @@
 import os
+import json
+import socket
+import boto3
 import asyncpg
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
@@ -11,19 +14,46 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:sync_pass@127.0.0.1:5444/sync_db")
+S3_BUCKET = os.getenv("S3_BUCKET")
 
 # Music folder paths are configurable via environment variables (cross-platform)
 small_mp3_path = os.getenv("SMALL_MP3_PATH", "")
 large_mp3_path = os.getenv("LARGE_MP3_PATH", "")
 
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
+
+def update_s3_dns(ip):
+    try:
+        url = f"http://{ip}:8000"
+        data = json.dumps({"url": url})
+        with open("server.json", "w") as f:
+            f.write(data)
+        if S3_BUCKET:
+            s3 = boto3.client("s3")
+            s3.upload_file("server.json", S3_BUCKET, "tracks/server.json", ExtraArgs={'ContentType': 'application/json'})
+            print(f"Dynamic DNS uploaded: {url} to s3://{S3_BUCKET}/tracks/server.json")
+    except Exception as e:
+        print(f"Failed to update S3 DNS: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Manage database connection pool lifecycle."""
+    """Manage database connection pool lifecycle and dynamic DNS."""
+    current_ip = get_ip()
+    app.current_ip = current_ip
+    update_s3_dns(current_ip)
+    
     app.db_pool = await asyncpg.create_pool(DATABASE_URL)
     yield
     await app.db_pool.close()
-
 
 app = FastAPI(title="Sync API", version="1.0.0", lifespan=lifespan)
 
@@ -88,7 +118,7 @@ async def get_tracks(limit: int = 50, offset: int = 0, genre: Optional[str] = No
                 if url.startswith('E:\\') or url.startswith('e:\\'):
                     basename = os.path.basename(url)
                     # We assume these are served by the large or small mounts. For safety, map to /music/large
-                    track_dict['audio_url'] = f"http://172.27.252.95:8000/music/large/{basename}"
+                    track_dict['audio_url'] = f"http://{app.current_ip}:8000/music/large/{basename}"
                 processed_tracks.append(Track(**track_dict))
             return processed_tracks
     except Exception as e:

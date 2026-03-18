@@ -1,13 +1,13 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsService {
-  static const _keyApiBaseUrl = 'api_base_url';
+  static const _keyApiBaseUrl = 'api_base_url_v2';
   static const _keyStreamQuality = 'stream_quality';
   static const _keyThemeMode = 'theme_mode';
   static const _keyAutoPlay = 'auto_play';
   static const _keyCacheEnabled = 'cache_enabled';
 
-  static const String defaultApiUrl = 'http://172.27.252.95:8000';
+  static const String defaultApiUrl = 'http://10.99.189.95:8000';
 
   final SharedPreferences _prefs;
 

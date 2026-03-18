@@ -12,12 +12,29 @@ class ApiService {
   String get _base => _settings.apiBaseUrl.replaceAll(RegExp(r'/$'), '');
 
   Future<List<Track>> getTracks({int limit = 50, int offset = 0, String? genre}) async {
-    final uri = Uri.parse('$_base/tracks').replace(queryParameters: {
+    var uri = Uri.parse('$_base/tracks').replace(queryParameters: {
       'limit': '$limit',
       'offset': '$offset',
       if (genre != null) 'genre': genre,
     });
-    final response = await http.get(uri).timeout(const Duration(seconds: 10));
+    
+    http.Response response;
+    try {
+      response = await http.get(uri).timeout(const Duration(seconds: 3));
+    } catch (_) {
+      // If connection fails, try auto-detecting the new IP from S3
+      final ok = await checkHealth();
+      if (!ok) throw Exception('Server unreachable. Could not auto-detect IP.');
+      
+      // Retry with the new _base
+      uri = Uri.parse('$_base/tracks').replace(queryParameters: {
+        'limit': '$limit',
+        'offset': '$offset',
+        if (genre != null) 'genre': genre,
+      });
+      response = await http.get(uri).timeout(const Duration(seconds: 5));
+    }
+
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((j) => Track.fromJson(j)).toList();
@@ -46,14 +63,42 @@ class ApiService {
     throw Exception('Failed to load playlists (${response.statusCode})');
   }
 
+  Future<bool> _autoDetectServer() async {
+    try {
+      final s3Response = await http.get(Uri.parse('https://s3.amazonaws.com/sync-music-vault-rahul/tracks/server.json'))
+          .timeout(const Duration(seconds: 5));
+      if (s3Response.statusCode == 200) {
+        final data = jsonDecode(s3Response.body);
+        final url = data['url'];
+        if (url != null && url is String && url.isNotEmpty) {
+          await _settings.setApiBaseUrl(url);
+          return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
+
   Future<bool> checkHealth() async {
     try {
       final response = await http
           .get(Uri.parse('$_base/health'))
-          .timeout(const Duration(seconds: 5));
-      return response.statusCode == 200;
-    } catch (_) {
-      return false;
+          .timeout(const Duration(seconds: 3));
+      if (response.statusCode == 200) return true;
+    } catch (_) {}
+    
+    // Auto-detect from S3 fallback
+    final detected = await _autoDetectServer();
+    if (detected) {
+      // Re-check with new URL
+      try {
+        final response = await http
+            .get(Uri.parse('$_base/health'))
+            .timeout(const Duration(seconds: 3));
+        return response.statusCode == 200;
+      } catch (_) {}
     }
+    return false;
   }
 }
+
