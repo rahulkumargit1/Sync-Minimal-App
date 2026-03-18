@@ -38,11 +38,16 @@ def update_s3_dns(ip):
         with open("server.json", "w") as f:
             f.write(data)
         if S3_BUCKET:
-            s3 = boto3.client("s3")
-            s3.upload_file("server.json", S3_BUCKET, "tracks/server.json", ExtraArgs={'ContentType': 'application/json'})
-            print(f"Dynamic DNS uploaded: {url} to s3://{S3_BUCKET}/tracks/server.json")
+            import subprocess
+            try:
+                subprocess.run(['git', 'add', 'server.json'], cwd=os.path.dirname(os.path.abspath(__file__)), check=True)
+                subprocess.run(['git', 'commit', '-m', f'Auto update IP to {ip}'], cwd=os.path.dirname(os.path.abspath(__file__)))
+                subprocess.run(['git', 'push'], cwd=os.path.dirname(os.path.abspath(__file__)))
+                print(f"Dynamic DNS uploaded: {url} to GitHub Repository")
+            except Exception as git_err:
+                print(f"Git push failed: {git_err}")
     except Exception as e:
-        print(f"Failed to update S3 DNS: {e}")
+        print(f"Failed to update Dynamic DNS: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

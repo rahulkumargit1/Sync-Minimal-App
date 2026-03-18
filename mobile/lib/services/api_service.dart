@@ -65,7 +65,7 @@ class ApiService {
 
   Future<bool> _autoDetectServer() async {
     try {
-      final s3Response = await http.get(Uri.parse('https://s3.amazonaws.com/sync-music-vault-rahul/tracks/server.json'))
+      final s3Response = await http.get(Uri.parse('https://raw.githubusercontent.com/rahulkumargit1/Sync-Minimal-App/main/api/server.json'))
           .timeout(const Duration(seconds: 5));
       if (s3Response.statusCode == 200) {
         final data = jsonDecode(s3Response.body);
