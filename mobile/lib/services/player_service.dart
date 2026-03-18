@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/track.dart';
@@ -12,10 +13,13 @@ class PositionData {
 
 class PlayerService {
   final AudioPlayer _player = AudioPlayer();
+  final AudioHandler? _audioHandler;
 
   Track? _currentTrack;
   List<Track> _queue = [];
   int _queueIndex = -1;
+
+  PlayerService({AudioHandler? audioHandler}) : _audioHandler = audioHandler;
 
   Track? get currentTrack => _currentTrack;
   List<Track> get queue => List.unmodifiable(_queue);
@@ -46,10 +50,23 @@ class PlayerService {
     }
 
     try {
-      await _player.setUrl(track.audioUrl);
-      await _player.play();
+      // Use the audio handler if available (for background audio support)
+      if (_audioHandler != null) {
+        final mediaItem = MediaItem(
+          id: track.id,
+          title: track.title,
+          artist: track.artist,
+          album: track.album,
+          duration: Duration(seconds: track.duration),
+          extras: {'url': track.audioUrl},
+        );
+        await _audioHandler!.playMediaItem(mediaItem);
+      } else {
+        // Fallback - directly play URL
+        await _player.setUrl(track.audioUrl);
+        await _player.play();
+      }
     } catch (e) {
-      // Surface error to caller
       rethrow;
     }
   }
@@ -61,7 +78,6 @@ class PlayerService {
   }
 
   Future<void> playPrevious() async {
-    // If more than 3 seconds in, restart current track
     if (_player.position.inSeconds > 3) {
       await _player.seek(Duration.zero);
       return;

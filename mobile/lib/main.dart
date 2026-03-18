@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'services/settings_service.dart';
 import 'services/api_service.dart';
 import 'services/player_service.dart';
+import 'services/audio_handler.dart';
 import 'screens/shell_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -23,7 +24,8 @@ void main() async {
 
   final settings = await SettingsService.create();
   final api = ApiService(settings);
-  final player = PlayerService();
+  final audioHandler = await initAudioService();
+  final player = PlayerService(audioHandler: audioHandler);
 
   runApp(SyncApp(settings: settings, api: api, player: player));
 }
