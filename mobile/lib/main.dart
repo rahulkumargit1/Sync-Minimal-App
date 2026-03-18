@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:audio_session/audio_session.dart';
+import 'package:audio_service/audio_service.dart';
 import 'services/settings_service.dart';
 import 'services/api_service.dart';
 import 'services/player_service.dart';
@@ -24,7 +26,16 @@ void main() async {
 
   final settings = await SettingsService.create();
   final api = ApiService(settings);
-  final audioHandler = await initAudioService();
+  
+  AudioHandler? audioHandler;
+  try {
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.music());
+    audioHandler = await initAudioService();
+  } catch (e) {
+    debugPrint('AudioService init failed: $e');
+  }
+  
   final player = PlayerService(audioHandler: audioHandler);
 
   runApp(SyncApp(settings: settings, api: api, player: player));
